@@ -5,7 +5,7 @@
             <SetLocations                   name="set_locations" num_locs="{num_locs}" loc_names="{loc_names}" loc_poses="{loc_poses}"/>
             <RetryUntilSuccessful           num_attempts="{num_locs}">
                 <Sequence                   name="search_location">
-                    <GetLocationFromQueue   name="get_loc"      loc_names="{loc_names}" target_location="{target_location}"/>   
+                    <DummyBTNode   name="get_loc"      loc_names="{loc_names}" target_location="{target_location}"/>   
                     <GoToPose               name="go_to_loc"    loc_poses="{loc_poses}" loc="{target_location}"/>
                     <LookForObject          name="look_for_obj" />
                 </Sequence>   
@@ -20,7 +20,7 @@
             <output_port name="loc_names"/>
             <output_port name="loc_poses"/>
         </Action>
-        <Action ID="GetLocationFromQueue">
+        <Action ID="DummyBTNode">
             <!-- NOTE: `inout_port` is not a typo of `input_port`, it is a bidirectional port. -->
             <inout_port name="loc_names"/>
             <output_port name="target_location"/>

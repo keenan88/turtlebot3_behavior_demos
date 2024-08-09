@@ -26,6 +26,8 @@ def get_autonomy_and_visualization_nodes(context, *args, **kwargs):
     pkg_tb3_autonomy = get_package_share_directory("tb3_autonomy")
     xml_file_path = join(pkg_tb3_autonomy, "bt_xml", xml_file_name)
 
+    print("xml_file_path: ", xml_file_path)
+
     return [
         # Main autonomy node.
         Node(

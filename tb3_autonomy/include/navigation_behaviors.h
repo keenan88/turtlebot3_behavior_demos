@@ -73,3 +73,15 @@ class GoToPose : public BT::StatefulActionNode
     // Action client callbacks
     void result_callback(const GoalHandleNav::WrappedResult& result);
 };
+
+// Gets location from a queue of locations read from a list.
+class DummyBTNode : public BT::SyncActionNode
+{
+  public:
+    DummyBTNode(const std::string& name, const BT::NodeConfig& config);
+    BT::NodeStatus tick() override;
+    static BT::PortsList providedPorts();
+  
+  private:
+    std::deque<std::string> location_queue_;
+};

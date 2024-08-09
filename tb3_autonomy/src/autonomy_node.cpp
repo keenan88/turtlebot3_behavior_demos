@@ -69,6 +69,7 @@ class AutonomyNode : public rclcpp::Node {
             factory.registerNodeType<GetLocationFromQueue>("GetLocationFromQueue");
             factory.registerNodeType<GoToPose>("GoToPose", shared_from_this());
             factory.registerNodeType<LookForObject>("LookForObject", shared_from_this());
+            factory.registerNodeType<DummyBTNode>("DummyBTNode");
             
             auto blackboard = BT::Blackboard::create();
             blackboard->set<std::string>("location_file", location_file_);
