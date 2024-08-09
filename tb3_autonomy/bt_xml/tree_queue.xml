@@ -31,5 +31,6 @@
             <input_port name="loc_poses"/>
         </Action>
         <Action ID="LookForObject"/>
+        <Action ID="DoWait"/>
     </TreeNodesModel>
 </root>
