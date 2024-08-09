@@ -3,6 +3,7 @@
 #include "rclcpp/rclcpp.hpp"
 #include "rclcpp_action/rclcpp_action.hpp"
 #include "nav2_msgs/action/navigate_to_pose.hpp"
+#include "nav2_msgs/action/wait.hpp"
 #include "behaviortree_cpp/behavior_tree.h"
 #include "yaml-cpp/yaml.h"
 
@@ -84,4 +85,26 @@ class DummyBTNode : public BT::SyncActionNode
   
   private:
     std::deque<std::string> location_queue_;
+};
+
+
+class DoWait : public BT::StatefulActionNode
+{
+  public:
+    using WaitMsg = nav2_msgs::action::Wait;
+    using GoalHandle = rclcpp_action::ClientGoalHandle<WaitMsg>;
+
+    bool done_flag_;
+    rclcpp_action::ResultCode nav_result_;
+    rclcpp::Node::SharedPtr node_ptr_;
+    rclcpp_action::Client<WaitMsg>::SharedPtr client_ptr_;
+
+    DoWait(const std::string& name, const BT::NodeConfig& config,
+             rclcpp::Node::SharedPtr node_ptr);
+    BT::NodeStatus onStart() override;
+    BT::NodeStatus onRunning() override;
+    void onHalted() override {};
+    static BT::PortsList providedPorts();
+
+    void result_callback(const GoalHandle::WrappedResult& result);
 };

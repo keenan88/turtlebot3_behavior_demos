@@ -195,6 +195,7 @@ DummyBTNode::DummyBTNode(const std::string& name,
     BT::SyncActionNode(name, config)
 {
     std::cout << "[" << this->name() << "] Initialized" << std::endl;
+    std::cout << "Live free, like lions in the wild" << std::endl;
 }
 
 BT::NodeStatus DummyBTNode::tick()
@@ -221,4 +222,70 @@ BT::PortsList DummyBTNode::providedPorts()
 {
     return { BT::OutputPort<std::string>("target_location"),
              BT::BidirectionalPort<std::deque<std::string>>("loc_names") };
+}
+
+
+
+
+// DoWait
+DoWait::DoWait(const std::string& name, const BT::NodeConfig& config,
+                   rclcpp::Node::SharedPtr node_ptr) :
+    BT::StatefulActionNode(name, config), node_ptr_{node_ptr} {}
+
+BT::NodeStatus DoWait::onStart() {
+    // Validate that a node exists
+    if (!node_ptr_) {
+        std::cout << "ROS2 node not registered via init() method" << std::endl;
+        return BT::NodeStatus::FAILURE;
+    }
+     
+    // Set up the action client
+    using namespace std::placeholders;
+    auto send_goal_options = 
+        rclcpp_action::Client<WaitMsg>::SendGoalOptions();
+    send_goal_options.result_callback =
+        std::bind(&DoWait::result_callback, this, _1);
+    client_ptr_ = rclcpp_action::create_client<WaitMsg>(
+      node_ptr_, "/wait");
+
+    // Package up the the goal
+    auto goal_msg = WaitMsg::Goal();
+    goal_msg.time.sec = 5;
+    goal_msg.time.nanosec = 0;
+
+    // Send the wait action goal.
+    done_flag_ = false;
+    client_ptr_-> async_send_goal(goal_msg, send_goal_options);
+    std::cout << "[" << this->name() << "] Sent goal message" << std::endl;
+    return BT::NodeStatus::RUNNING;
+}
+
+BT::NodeStatus DoWait::onRunning() {
+    // If there is a result, we can check the status of the action directly.
+    // Otherwise, the action is still running.
+    if (done_flag_) {
+        if (nav_result_ == rclcpp_action::ResultCode::SUCCEEDED) {
+            std::cout << "[" << this->name() << "] Wait completed" << std::endl;
+            return BT::NodeStatus::SUCCESS;   
+        } else {
+            std::cout << "[" << this->name() << "] Wait failed to complete" << std::endl;
+            return BT::NodeStatus::FAILURE;   
+        }
+    } else {
+        return BT::NodeStatus::RUNNING;
+    }
+}
+
+void DoWait::result_callback(const GoalHandle::WrappedResult& result) {
+    // If there is a result, we consider navigation completed and save the
+    // result code to be checked in the `onRunning()` method.
+    if (result.result) {
+        done_flag_ = true;
+        nav_result_ = result.code;
+    }
+}
+
+BT::PortsList DoWait::providedPorts() {
+    return { BT::InputPort<std::string>("loc"),
+             BT::InputPort<std::map<std::string, Pose>>("loc_poses") };
 }
